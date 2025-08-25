@@ -1,0 +1,138 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Statistics — TYACDI</title>
+<link rel="stylesheet" href="styles.css"/>
+<script defer src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav><div class="container nav-wrap">
+  <a class="brand" href="index.html"><img src="assets/tyacdi-logo.png" alt=""/><span>TYACDI</span></a>
+  <ul><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="services.html">Services</a></li><li><a href="stats.html">Statistics</a></li><li><a href="contact.html">Contact</a></li></ul>
+</div></nav>
+
+<header class="hero"><div class="container center">
+  <img src="assets/tyacdi-logo.png" alt=""/>
+  <h1>Business Growth Statistics (2019–2025)</h1>
+  <p class="type"></p>
+</div></header>
+
+<main class="section"><div class="container">
+  <div class="stats-band fade-in">
+    <div class="stat"><div class="num" id="statBiz">0</div><div class="label">Businesses</div></div>
+    <div class="stat"><div class="num" id="statAvg">0%</div><div class="label">Average Growth</div></div>
+    <div class="stat"><div class="num" id="statTop">$0</div><div class="label">Top 2025 Income</div></div>
+  </div>
+
+  <div class="fade-in" style="margin:24px 0">
+    <input class="search" id="search" placeholder="Search business..." />
+  </div>
+
+  <div class="card fade-in" style="overflow:auto">
+    <table class="table" id="tbl">
+      <thead>
+        <tr>
+          <th>#</th><th>Business</th>
+          <th>2019 (₦/$)</th><th>2021</th><th>2023</th>
+          <th>2025 (with TYACDI)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card fade-in" style="margin-top:18px">
+    <canvas id="chart" height="120"></canvas>
+  </div>
+</div></main>
+
+<footer><div class="container">© 2025 TYACDI</div></footer>
+
+<script>
+const names = [
+ "Naija Sports Hub","Lagos Fit World","Abuja AgroTech","GreenLife Farms","Eko Fitness Gear","SwiftRide Logistics",
+ "Kano Digital Hub","Port Harcourt Energy","Delta Fresh Foods","Benue Farmers Co.","Kaduna Gold Textiles","Jos Creative Media",
+ "Ibadan TechWorks","Yola Solar Systems","Enugu SmartBuild","Ogun AgroFoods","Warri Transport Links","Aba Fashion Line",
+ "Maiduguri Green Ventures","Ilorin Digital Connect","RoyalTouch Spa","PrimeWear Boutique","Unity Supermart","Skyline Hotels",
+ "BlueWave Electronics","CityMed Diagnostics","VitalPlus Pharmacy","UrbanGear Sports","PowerMax Solar","FreshBites Foods",
+ "RapidBuild Constructions","DreamHouse Interiors","Galaxy Phones","Zen Fitness Hub","MegaPrint Media","BrightPath Education",
+ "TopGear Motors","FreshHarvest Agro","Glory Supermart","NextGen Studios","Naija Wellness Spa","TechNova Apps",
+ "Royal Agro Farms","MegaFit Sports","PureWater Nigeria","SureBuild Hardware","SmartConnect Telecoms","Prime Energy",
+ "UrbanPower Solar","ProClean Detergents","Elite Fitness Club","GoldenPalm Resorts","HappyLife Pharmacy","GlobalLink ICT",
+ "FlexWear Clothing","SuperClean Services","Urban Style Shoes","Naija Drinks Co.","CityFarms Produce","Elite Car Rentals",
+ "BlueOcean Shipping","FreshRide Logistics","UrbanLife Décor","PowerLine Cables","Sparkle Events","Turbo Auto Parts",
+ "SmartHome Gadgets","UrbanWear Clothing","GreenCity Estates","BodyCare Spa","TopChoice Superstore","Zenith Homewares",
+ "Optima Motion","CoreBalance Fitness","Vector Athletics","Apex Stride","Ignite Motion","NovaSport","AstroFit",
+ "MomentumFlex","PrimeFlow Sports","RapidStride","AeroStride","Summit Athletics","IronEdge Nigeria","Blaze Athletics",
+ "Quantum Moves","HydraSport","Typhoon Gear","PeakVista Sport","Optima Sports","CoreX Studios","StarFlex Media",
+ "NextMotion Labs","VigorWorks","Galaxy Sport","AstraFit","VectorGear","Skyline Motion","TruAthletics","IgniteCore",
+ "VelocityFlex","ZenCore Sports"
+];
+
+const tbody = document.querySelector("#tbl tbody");
+const rate = 1000; // ₦1000 = $1 (display convenience)
+let rows = [];
+for (let i=1;i<=100;i++){
+  const name = names[(i-1)%names.length] + (i>names.length?` ${Math.ceil(i/names.length)}`:"");
+  const startNaira = 1_000_000;  // ₦1M
+  const startDollar = 100_000;   // $100k
+  const useUSD = i%2===0;
+  const base = useUSD? startDollar : startNaira;
+  const sym = useUSD? "$":"₦";
+
+  const y2019 = base;
+  const y2021 = Math.floor(y2019 * (1.8 + Math.random()*0.5));
+  const y2023 = Math.floor(y2021 * (1.7 + Math.random()*0.6));
+  const y2025 = Math.floor(y2023 * (2.2 + Math.random()*1.2)); // TYACDI boost
+
+  rows.push({i,name,sym,vals:[y2019,y2021,y2023,y2025]});
+}
+
+// Fill table
+rows.forEach(r=>{
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${r.i}</td><td>${r.name}</td>
+  <td>${r.sym}${r.vals[0].toLocaleString()}</td>
+  <td>${r.sym}${r.vals[1].toLocaleString()}</td>
+  <td>${r.sym}${r.vals[2].toLocaleString()}</td>
+  <td><b style="color:#c79c1d">${r.sym}${r.vals[3].toLocaleString()}</b></td>`;
+  tbody.appendChild(tr);
+});
+
+// Stats counters
+function animate(id, end, prefix="", suffix="", dur=1600){
+  const el=document.getElementById(id); let s=0, start=null;
+  function step(ts){ if(!start) start=ts; const p=Math.min((ts-start)/dur,1); const v=Math.floor(p*end);
+    el.textContent = prefix + v.toLocaleString() + suffix; if(p<1) requestAnimationFrame(step); }
+  requestAnimationFrame(step);
+}
+const avgGrowth = Math.round(rows.reduce((a,r)=>a + ( (r.vals[3]-r.vals[0]) / r.vals[0] ),0)/rows.length*100);
+const top2025 = Math.max(...rows.map(r=>r.vals[3]));
+animate("statBiz", rows.length);
+animate("statAvg", avgGrowth, "", "%");
+animate("statTop", top2025, rows[0].sym==="₦"?"₦":"$"); // just a prefix display
+
+// Chart (first 6 businesses)
+const ctx = document.getElementById("chart");
+const labels = ["2019","2021","2023","2025"];
+const datasets = rows.slice(0,6).map((r,idx)=>({
+  label:r.name,
+  data:r.vals,
+  borderColor:`hsl(${idx*50},70%,60%)`,
+  backgroundColor:"transparent",
+  tension:.3
+}));
+new Chart(ctx,{type:"line",data:{labels,datasets},
+  options:{plugins:{legend:{position:"bottom"}},scales:{y:{ticks:{callback:v=>v.toLocaleString()}}}}
+});
+
+// Search
+document.getElementById("search").addEventListener("input", e=>{
+  const q = e.target.value.toLowerCase();
+  Array.from(tbody.rows).forEach(tr=>{
+    tr.style.display = tr.cells[1].textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+});
+</script>
+</body></html>
